@@ -6,32 +6,32 @@ import { ReleaseCard } from '@/components/release/ReleaseCard';
 import { ScreenHeader } from '@/components/release/ScreenHeader';
 import { palette } from '@/constants/theme';
 import { useReleases } from '@/hooks/useReleases';
-import { formatDateRangeLabel, getThisWeekReleases } from '@/lib/releases';
+import { useWatchlist } from '@/hooks/useWatchlist';
 
-export default function ThisWeekScreen() {
+export default function MyRadarScreen() {
+  const { savedIds } = useWatchlist();
   const { releases } = useReleases();
-  const now = new Date();
-  const upcoming = getThisWeekReleases(releases, now);
+  const savedReleases = releases.filter((release) => savedIds.includes(release.id));
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader
-          eyebrow="This Week"
-          title="Next seven days"
-          description={`${formatDateRangeLabel(now)}. A quick-scan list for checking what is landing next.`}
-          statLabel="Coming up"
-          statValue={String(upcoming.length)}
+          eyebrow="My Radar"
+          title="Saved drops"
+          description="Your personal watchlist of highly anticipated releases."
+          statLabel="Tracked"
+          statValue={String(savedReleases.length)}
         />
 
         <View style={styles.wrap}>
-          {upcoming.length === 0 ? (
+          {savedReleases.length === 0 ? (
             <EmptyState
-              title="Nothing drops in the next seven days"
-              description="That quiet patch is useful signal too. Shift to Browse to scan the next month or quarter."
+              title="Nothing on your radar yet"
+              description="Browse the timeline and tap Save on any release to keep it here for quick access."
             />
           ) : (
-            upcoming.map((release) => <ReleaseCard key={release.id} release={release} />)
+            savedReleases.map((release) => <ReleaseCard key={release.id} release={release} />)
           )}
         </View>
       </ScrollView>

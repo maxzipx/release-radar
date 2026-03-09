@@ -1,6 +1,6 @@
-import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import React from 'react';
 
 import { palette } from '@/constants/theme';
 
@@ -43,6 +43,13 @@ export default function TabLayout() {
         options={{
           title: 'This Week',
           tabBarIcon: ({ color }) => <Ionicons name="sparkles-outline" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="my-radar"
+        options={{
+          title: 'My Radar',
+          tabBarIcon: ({ color }) => <Ionicons name="bookmark-outline" size={22} color={color} />,
         }}
       />
     </Tabs>

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
   Image,
@@ -5,12 +6,14 @@ import {
   Linking,
   Platform,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
 import { palette, shadows } from '@/constants/theme';
+import { useWatchlist } from '@/hooks/useWatchlist';
 import { formatReleaseDateLabel } from '@/lib/releases';
 import type { Release } from '@/lib/types';
 
@@ -23,6 +26,8 @@ type ReleaseCardProps = {
 };
 
 export function ReleaseCard({ compact = false, featured = false, release }: ReleaseCardProps) {
+  const { isSaved, toggleSaved } = useWatchlist();
+  const saved = isSaved(release.id);
   const [expanded, setExpanded] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -40,6 +45,16 @@ export function ReleaseCard({ compact = false, featured = false, release }: Rele
     }
 
     await Linking.openURL(release.trailerUrl);
+  }
+
+  async function handleSharePress() {
+    try {
+      await Share.share({
+        message: `Don't miss ${release.title} dropping on ${formatReleaseDateLabel(release)}! Track it on Release Radar.`,
+      });
+    } catch (error) {
+      console.error('Error sharing', error);
+    }
   }
 
   const shouldShowImage = Boolean(release.posterUrl) && !imageFailed;
@@ -105,12 +120,39 @@ export function ReleaseCard({ compact = false, featured = false, release }: Rele
 
           <View style={styles.footerRow}>
             <Text style={styles.genreLine}>{release.genres.join(' • ')}</Text>
-            <Text
-              accessibilityRole={release.trailerUrl ? 'link' : 'text'}
-              onPress={release.trailerUrl ? handleTrailerPress : undefined}
-              style={[styles.trailerLink, !release.trailerUrl ? styles.trailerDisabled : undefined]}>
-              {release.trailerUrl ? 'Watch trailer' : 'Trailer pending'}
-            </Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={saved ? `Remove ${release.title} from My Radar` : `Save ${release.title} to My Radar`}
+                onPress={() => toggleSaved(release.id)}
+                style={({ pressed }) => [styles.bookmarkBtn, pressed ? styles.pressedAction : undefined]}>
+                <Ionicons
+                  name={saved ? 'bookmark' : 'bookmark-outline'}
+                  size={18}
+                  color={saved ? palette.accent : palette.text}
+                />
+                <Text style={[styles.bookmarkText, saved ? styles.bookmarkTextSaved : undefined]}>
+                  {saved ? 'Saved' : 'Save'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Share ${release.title}`}
+                onPress={handleSharePress}
+                style={({ pressed }) => [styles.bookmarkBtn, pressed ? styles.pressedAction : undefined]}>
+                <Ionicons name="share-outline" size={18} color={palette.text} />
+                <Text style={styles.bookmarkText}>Share</Text>
+              </Pressable>
+
+              <Text
+                accessibilityRole={release.trailerUrl ? 'link' : 'text'}
+                onPress={release.trailerUrl ? handleTrailerPress : undefined}
+                style={[styles.trailerLink, !release.trailerUrl ? styles.trailerDisabled : undefined]}>
+                {release.trailerUrl ? 'Watch trailer' : 'Trailer pending'}
+              </Text>
+            </View>
           </View>
         </View>
       ) : null}
@@ -266,5 +308,26 @@ const styles = StyleSheet.create({
   },
   trailerDisabled: {
     color: palette.muted,
+  },
+  actionRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 16,
+  },
+  bookmarkBtn: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  bookmarkText: {
+    color: palette.text,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  bookmarkTextSaved: {
+    color: palette.accent,
+  },
+  pressedAction: {
+    opacity: 0.6,
   },
 });

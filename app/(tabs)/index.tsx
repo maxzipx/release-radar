@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ReleaseCard } from '@/components/release/ReleaseCard';
 import { ScreenHeader } from '@/components/release/ScreenHeader';
 import { palette } from '@/constants/theme';
-import { releases } from '@/data/releases';
+import { useReleases } from '@/hooks/useReleases';
 import { getCurrentMonthLabel, getTimelineSections } from '@/lib/releases';
 
 export default function TimelineScreen() {
+  const { releases } = useReleases();
   const sections = getTimelineSections(releases);
   const currentMonthLabel = getCurrentMonthLabel(new Date());
 

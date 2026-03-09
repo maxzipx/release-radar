@@ -1,9 +1,10 @@
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { palette } from '@/constants/theme';
+import { WatchlistProvider } from '@/hooks/useWatchlist';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -28,9 +29,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={navigationTheme}>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.background } }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+        <WatchlistProvider>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.background } }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </WatchlistProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

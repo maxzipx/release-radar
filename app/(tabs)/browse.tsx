@@ -1,4 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/release/EmptyState';
@@ -6,14 +8,25 @@ import { FilterGroup } from '@/components/release/FilterGroup';
 import { ReleaseCard } from '@/components/release/ReleaseCard';
 import { ScreenHeader } from '@/components/release/ScreenHeader';
 import { palette } from '@/constants/theme';
-import { releases } from '@/data/releases';
+import { useReleases } from '@/hooks/useReleases';
 import { useSessionFilters } from '@/hooks/useSessionFilters';
 import { applyReleaseFilters, getFilterOptions } from '@/lib/releases';
 
 export default function BrowseScreen() {
+  const { releases } = useReleases();
   const { filters, clearFilters, loaded, toggleFilter } = useSessionFilters();
   const options = getFilterOptions(releases);
-  const visibleReleases = applyReleaseFilters(releases, filters);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const visibleReleases = applyReleaseFilters(releases, filters).filter((release) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      release.title.toLowerCase().includes(q) ||
+      release.shortDescription.toLowerCase().includes(q) ||
+      release.tags.some((tag) => tag.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
@@ -25,6 +38,19 @@ export default function BrowseScreen() {
           statLabel="Visible"
           statValue={String(visibleReleases.length)}
         />
+
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={palette.muted} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by title, description, or tag..."
+            placeholderTextColor={palette.muted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+          />
+        </View>
 
         <View style={styles.filterWrap}>
           <View style={styles.filterTopRow}>
@@ -84,6 +110,26 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     paddingHorizontal: 18,
     paddingTop: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    height: 50,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: palette.text,
+    fontSize: 16,
+    fontWeight: '500',
   },
   filterWrap: {
     backgroundColor: palette.card,
