@@ -1,7 +1,8 @@
 import type {
   ApiItemResponse,
   ApiListResponse,
-  ReleaseSummary,
+  CalendarReleaseItem,
+  CalendarReleasesMeta,
   TriviaQuestionSummary,
 } from "@release-dates/shared";
 import { env } from "@/config/env";
@@ -54,6 +55,12 @@ const request = async <T>(path: string): Promise<T> => {
 };
 
 export const apiClient = {
-  getReleases: () => request<ApiListResponse<ReleaseSummary>>("/api/v1/releases"),
+  getReleases: (params: { from: string; to: string }) =>
+    request<ApiListResponse<CalendarReleaseItem, CalendarReleasesMeta>>(
+      `/api/v1/releases?${new URLSearchParams({
+        from: params.from,
+        to: params.to,
+      }).toString()}`,
+    ),
   getTodayTrivia: () => request<ApiItemResponse<TriviaQuestionSummary>>("/api/v1/trivia/today"),
 };

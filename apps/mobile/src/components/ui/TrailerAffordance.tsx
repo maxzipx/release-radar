@@ -1,9 +1,22 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import * as WebBrowser from "expo-web-browser";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useThemeTokens } from "@/hooks";
 
-export const isExpoWebBrowserAvailable = true;
+interface ExpoWebBrowserModule {
+  openBrowserAsync: (url: string) => Promise<unknown>;
+}
+
+let webBrowser: ExpoWebBrowserModule | null = null;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const module = require("expo-web-browser") as ExpoWebBrowserModule;
+  webBrowser = typeof module.openBrowserAsync === "function" ? module : null;
+} catch {
+  webBrowser = null;
+}
+
+export const isExpoWebBrowserAvailable = Boolean(webBrowser);
 
 interface TrailerAffordanceProps {
   trailerUrl?: string | null;
@@ -16,14 +29,22 @@ export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
     return null;
   }
 
+  const disabled = !isExpoWebBrowserAvailable;
+
   return (
     <View style={styles.container}>
       <Pressable
+        disabled={disabled}
         onPress={() => {
-          void WebBrowser.openBrowserAsync(trailerUrl);
+          if (!webBrowser) {
+            return;
+          }
+
+          void webBrowser.openBrowserAsync(trailerUrl);
         }}
         style={styles.button}
         accessibilityRole="button"
+        accessibilityState={{ disabled }}
         accessibilityLabel="Watch trailer"
       >
         <MaterialIcons name="play-arrow" size={14} color={colors.textSecondary} />
@@ -31,6 +52,11 @@ export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
           Watch trailer
         </Text>
       </Pressable>
+      {disabled ? (
+        <Text style={[tokens.typography.microLabel, { color: colors.textTertiary }]}>
+          expo-web-browser not installed
+        </Text>
+      ) : null}
     </View>
   );
 }

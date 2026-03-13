@@ -189,7 +189,17 @@ export function BottomSheet({
           animateBackdrop(1, true);
         },
       }),
-    [animateBackdrop, animateTo, dismissSheet, expandable, expandedTop, initialTop, topPosition, windowHeight],
+    [
+      animateBackdrop,
+      animateTo,
+      backdropOpacity,
+      dismissSheet,
+      expandable,
+      expandedTop,
+      initialTop,
+      topPosition,
+      windowHeight,
+    ],
   );
 
   if (!isMounted) {
