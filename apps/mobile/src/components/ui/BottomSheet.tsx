@@ -178,15 +178,18 @@ export function BottomSheet({
             return;
           }
 
+          // Non-dismiss paths: restore backdrop to fully opaque as sheet snaps back.
           if (expandable && nextTop < (initialTop + expandedTop) / 2) {
             animateTo(expandedTop, true);
+            animateBackdrop(1, true);
             return;
           }
 
           animateTo(initialTop, true);
+          animateBackdrop(1, true);
         },
       }),
-    [animateTo, dismissSheet, expandable, expandedTop, initialTop, topPosition, windowHeight],
+    [animateBackdrop, animateTo, dismissSheet, expandable, expandedTop, initialTop, topPosition, windowHeight],
   );
 
   if (!isMounted) {
