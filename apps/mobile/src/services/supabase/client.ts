@@ -9,12 +9,7 @@ export const getSupabaseClient = () => {
   }
 
   if (!cachedClient) {
-    cachedClient = createClient(env.supabaseUrl, env.supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+    cachedClient = createClient(env.supabaseUrl, env.supabaseAnonKey);
   }
 
   return cachedClient;

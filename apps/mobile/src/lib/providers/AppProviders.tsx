@@ -6,11 +6,35 @@ import { queryClient } from "@/lib/query-client";
 import { useAppStore } from "@/state/app-store";
 
 export function AppProviders({ children }: PropsWithChildren) {
-  const setHydrated = useAppStore((state) => state.setHydrated);
+  const setHydrationState = useAppStore((state) => state.setHydrationState);
 
   useEffect(() => {
-    setHydrated(true);
-  }, [setHydrated]);
+    let isActive = true;
+
+    const initializeProviders = async () => {
+      setHydrationState("loading");
+
+      try {
+        await Promise.resolve(queryClient);
+
+        if (isActive) {
+          setHydrationState("ready");
+        }
+      } catch (error) {
+        if (isActive) {
+          const message =
+            error instanceof Error ? error.message : "App providers failed to initialize.";
+          setHydrationState("error", message);
+        }
+      }
+    };
+
+    void initializeProviders();
+
+    return () => {
+      isActive = false;
+    };
+  }, [setHydrationState]);
 
   return (
     <SafeAreaProvider>

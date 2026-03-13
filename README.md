@@ -28,12 +28,12 @@ API variables:
 
 ```env
 PORT=8787
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-CORS_ORIGIN=*
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+CORS_ORIGIN=http://localhost:8081
 ```
 
-The scaffold will run without Supabase credentials until those clients are used.
+The API now fails fast if `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, or `CORS_ORIGIN` are unset. Mobile Supabase variables can remain empty until the client is actually used.
 
 ## Commands
 

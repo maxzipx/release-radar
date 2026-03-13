@@ -20,8 +20,8 @@ export function PlaceholderPanel({
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
       <View style={styles.list}>
-        {items.map((item) => (
-          <Text key={item} style={styles.item}>
+        {items.map((item, index) => (
+          <Text key={`${title}-${index}`} style={styles.item}>
             - {item}
           </Text>
         ))}

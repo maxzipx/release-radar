@@ -10,12 +10,12 @@ export interface ApiHealthResponse {
   timestamp: string;
 }
 
-export interface ApiListResponse<T> {
+export interface ApiListResponse<T, TMeta = PlaceholderMeta> {
   data: T[];
-  meta: PlaceholderMeta;
+  meta: TMeta;
 }
 
-export interface ApiItemResponse<T> {
+export interface ApiItemResponse<T, TMeta = PlaceholderMeta> {
   data: T | null;
-  meta: PlaceholderMeta;
+  meta: TMeta;
 }

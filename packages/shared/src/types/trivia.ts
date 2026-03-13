@@ -3,5 +3,4 @@ export interface TriviaQuestionSummary {
   questionText: string;
   answerOptions: string[];
   scheduledDate: string;
-  isPublished: boolean;
 }
