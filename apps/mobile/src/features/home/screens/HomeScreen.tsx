@@ -1,11 +1,17 @@
 import { PlaceholderPanel } from "@/components/ui/PlaceholderPanel";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { featureFlags } from "@/config/feature-flags";
 import { envStatus } from "@/config/env";
+import { HomePreviewContent } from "@/features/preview";
 import { useAppStore } from "@/state/app-store";
 
 export function HomeScreen() {
   const hydrationStatus = useAppStore((state) => state.hydrationStatus);
   const hydrationError = useAppStore((state) => state.hydrationError);
+
+  if (featureFlags.uiFoundationPreview) {
+    return <HomePreviewContent />;
+  }
 
   return (
     <ScreenContainer

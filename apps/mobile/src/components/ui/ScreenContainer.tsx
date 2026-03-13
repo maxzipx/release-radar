@@ -1,27 +1,51 @@
 import type { PropsWithChildren } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { tokens } from "@/config/tokens";
+import { useThemeTokens } from "@/hooks";
 
 interface ScreenContainerProps extends PropsWithChildren {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
+  scrollEnabled?: boolean;
+  contentContainerStyle?: StyleProp<ViewStyle>;
 }
 
 export function ScreenContainer({
   title,
   description,
+  scrollEnabled = true,
+  contentContainerStyle,
   children,
 }: ScreenContainerProps) {
-  return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+  const { colors, tokens } = useThemeTokens();
+
+  const content = (
+    <View style={[styles.content, { paddingHorizontal: tokens.layout.screenMargin }, contentContainerStyle]}>
+      {title ? (
         <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+          {description ? (
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
+              {description}
+            </Text>
+          ) : null}
         </View>
-        {children}
-      </ScrollView>
+      ) : null}
+      {children}
+    </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={["top", "left", "right"]}
+    >
+      {scrollEnabled ? (
+        <ScrollView contentContainerStyle={styles.scrollContent}>{content}</ScrollView>
+      ) : (
+        content
+      )}
     </SafeAreaView>
   );
 }
@@ -29,22 +53,22 @@ export function ScreenContainer({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: tokens.colors.background,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   content: {
-    gap: tokens.spacing.lg,
-    padding: tokens.spacing.lg,
+    gap: 24,
+    paddingTop: 16,
   },
   header: {
-    gap: tokens.spacing.xs,
+    gap: 8,
   },
   title: {
-    color: tokens.colors.text,
     fontSize: 28,
     fontWeight: "700",
   },
   description: {
-    color: tokens.colors.muted,
     fontSize: 15,
     lineHeight: 22,
   },

@@ -1,7 +1,13 @@
 import { PlaceholderPanel } from "@/components/ui/PlaceholderPanel";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { featureFlags } from "@/config/feature-flags";
+import { PlayPreviewContent } from "@/features/preview";
 
 export function PlayScreen() {
+  if (featureFlags.uiFoundationPreview) {
+    return <PlayPreviewContent />;
+  }
+
   return (
     <ScreenContainer
       title="Play"

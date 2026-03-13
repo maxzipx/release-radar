@@ -1,7 +1,13 @@
 import { PlaceholderPanel } from "@/components/ui/PlaceholderPanel";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { featureFlags } from "@/config/feature-flags";
+import { CalendarPreviewContent } from "@/features/preview";
 
 export function CalendarScreen() {
+  if (featureFlags.uiFoundationPreview) {
+    return <CalendarPreviewContent />;
+  }
+
   return (
     <ScreenContainer
       title="Calendar"
