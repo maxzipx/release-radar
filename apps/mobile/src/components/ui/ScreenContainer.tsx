@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import type { StyleProp, ViewStyle } from "react-native";
+import type { ScrollViewProps, StyleProp, ViewStyle } from "react-native";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeTokens } from "@/hooks";
@@ -9,6 +9,7 @@ interface ScreenContainerProps extends PropsWithChildren {
   description?: string;
   scrollEnabled?: boolean;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  scrollViewProps?: Omit<ScrollViewProps, "contentContainerStyle">;
 }
 
 export function ScreenContainer({
@@ -16,6 +17,7 @@ export function ScreenContainer({
   description,
   scrollEnabled = true,
   contentContainerStyle,
+  scrollViewProps,
   children,
 }: ScreenContainerProps) {
   const { colors, tokens } = useThemeTokens();
@@ -42,7 +44,7 @@ export function ScreenContainer({
       edges={["top", "left", "right"]}
     >
       {scrollEnabled ? (
-        <ScrollView contentContainerStyle={styles.scrollContent}>{content}</ScrollView>
+        <ScrollView {...scrollViewProps} contentContainerStyle={styles.scrollContent}>{content}</ScrollView>
       ) : (
         content
       )}

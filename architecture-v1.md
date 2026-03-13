@@ -124,15 +124,17 @@ Excluded:
 
 ## API Contract
 
-GET /releases  
-GET /releases/:id  
-GET /home  
-GET /trivia/today  
-POST /trivia/responses  
+All routes are prefixed with `/api/v1`.
+
+GET /api/v1/releases
+GET /api/v1/releases/:id
+GET /api/v1/home
+GET /api/v1/trivia/today
+POST /api/v1/trivia/responses
 
 Admin:
 
-POST /admin/sync
+POST /api/v1/admin/sync
 
 ---
 

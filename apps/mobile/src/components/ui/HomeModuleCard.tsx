@@ -1,8 +1,13 @@
 import type { PropsWithChildren } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
 import { useThemeTokens } from "@/hooks";
 
-export function HomeModuleCard({ children }: PropsWithChildren) {
+interface HomeModuleCardProps extends PropsWithChildren {
+  style?: StyleProp<ViewStyle>;
+}
+
+export function HomeModuleCard({ children, style }: HomeModuleCardProps) {
   const { colors, tokens } = useThemeTokens();
 
   return (
@@ -14,6 +19,7 @@ export function HomeModuleCard({ children }: PropsWithChildren) {
           borderColor: colors.separator,
           borderRadius: tokens.radii.md,
         },
+        style,
       ]}
     >
       {children}

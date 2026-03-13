@@ -165,6 +165,10 @@ export function BottomSheet({
             Math.max(minTop, panStartTop.current + gestureState.dy),
           );
           topPosition.setValue(nextTop);
+
+          // Keep backdrop opacity in sync with sheet position during drag.
+          const progress = 1 - (nextTop - initialTop) / (windowHeight - initialTop);
+          backdropOpacity.setValue(Math.max(0, Math.min(1, progress)));
         },
         onPanResponderRelease: (_, gestureState) => {
           const nextTop = currentTop.current;
@@ -215,9 +219,9 @@ export function BottomSheet({
               borderTopRightRadius: tokens.radii.lg,
             },
           ]}
-          {...panResponder.panHandlers}
         >
-          <View style={styles.handleContainer}>
+          {/* Pan handlers scoped to handle bar only — keeps inner ScrollViews from conflicting. */}
+          <View style={styles.handleContainer} {...panResponder.panHandlers}>
             <View style={[styles.handle, { backgroundColor: colors.fillTertiary }]} />
           </View>
           {children}

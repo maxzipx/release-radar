@@ -39,6 +39,8 @@ export function CalendarRow({
   const reduceMotion = useReducedMotion();
   const [highlighted, setHighlighted] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPressRef = useRef(onPress);
+  onPressRef.current = onPress;
   const treatment = getDateEmphasisTreatment(temporalState, colors);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function CalendarRow({
 
         timeoutRef.current = setTimeout(() => {
           setHighlighted(false);
-          onPress();
+          onPressRef.current();
         }, delay);
       }}
       accessibilityRole="button"

@@ -78,7 +78,7 @@ export function PosterBlock({
           placeholder={blurhash ?? undefined}
           contentFit="cover"
           style={[StyleSheet.absoluteFillObject, { borderRadius }]}
-          transition={reduceMotion ? 150 : tokens.motion.imageFadeIn}
+          transition={reduceMotion ? 0 : tokens.motion.imageFadeIn}
           onLoadStart={() => setLoadState("loading")}
           onLoad={() => setLoadState("loaded")}
           onError={() => setLoadState("error")}

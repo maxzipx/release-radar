@@ -1,16 +1,19 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env, envStatus } from "@/config/env";
 
-let cachedClient: SupabaseClient | null = null;
+// Lazy singleton scoped to a closure — avoids mutable module-level state.
+export const getSupabaseClient = (() => {
+  let client: SupabaseClient | null = null;
 
-export const getSupabaseClient = () => {
-  if (!envStatus.supabaseConfigured) {
-    throw new Error("Supabase mobile env is not configured.");
-  }
+  return () => {
+    if (!envStatus.supabaseConfigured) {
+      throw new Error("Supabase mobile env is not configured.");
+    }
 
-  if (!cachedClient) {
-    cachedClient = createClient(env.supabaseUrl, env.supabaseAnonKey);
-  }
+    if (!client) {
+      client = createClient(env.supabaseUrl, env.supabaseAnonKey);
+    }
 
-  return cachedClient;
-};
+    return client;
+  };
+})();

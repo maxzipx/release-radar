@@ -6,24 +6,16 @@ interface ExpoWebBrowserModule {
   openBrowserAsync: (url: string) => Promise<unknown>;
 }
 
-const loadExpoWebBrowser = (): ExpoWebBrowserModule | null => {
-  try {
-    const dynamicRequire = Function(
-      "return typeof require !== 'undefined' ? require : null;",
-    )() as ((moduleName: string) => unknown) | null;
-
-    if (!dynamicRequire) {
-      return null;
-    }
-
-    const module = dynamicRequire("expo-web-browser") as ExpoWebBrowserModule;
-    return typeof module.openBrowserAsync === "function" ? module : null;
-  } catch {
-    return null;
-  }
-};
-
-const webBrowserModule = loadExpoWebBrowser();
+// Static require so Metro includes expo-web-browser in the bundle when installed.
+// Falls back to null if the package is absent.
+let webBrowserModule: ExpoWebBrowserModule | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require("expo-web-browser") as ExpoWebBrowserModule;
+  webBrowserModule = typeof mod.openBrowserAsync === "function" ? mod : null;
+} catch {
+  webBrowserModule = null;
+}
 
 export const isExpoWebBrowserAvailable = Boolean(webBrowserModule);
 
