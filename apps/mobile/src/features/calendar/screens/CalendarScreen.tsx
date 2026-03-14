@@ -2,6 +2,7 @@ import {
   FlashList,
   type FlashListRef,
   type ListRenderItemInfo,
+  type ViewToken,
 } from "@shopify/flash-list";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -9,8 +10,6 @@ import {
   RefreshControl,
   StyleSheet,
   View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
 } from "react-native";
 import { CalendarRow } from "@/components/ui/CalendarRow";
 import { DateChangeSignal } from "@/components/ui/DateChangeSignal";
@@ -19,45 +18,53 @@ import { PlaceholderPanel } from "@/components/ui/PlaceholderPanel";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { WeekGroup } from "@/components/ui/WeekGroup";
 import { useCalendarFeed } from "@/features/calendar/hooks/useCalendarFeed";
-import type { CalendarWeekGroupModel } from "@/features/calendar/model/calendar-model";
+import type { CalendarListItem } from "@/features/calendar/model/calendar-model";
+import { useThemeTokens } from "@/hooks";
 import { useSaveStore } from "@/state/save-store";
 
 export function CalendarScreen() {
   const [openDetailId, setOpenDetailId] = useState<string | null>(null);
+  const { tokens } = useThemeTokens();
   const {
     currentWeekKey,
     detailById,
     errorMessage,
     isRefreshing,
+    listItems,
     loadBackward,
     loadForward,
     refresh,
     status,
-    weekGroups,
   } = useCalendarFeed();
-  const isSaved = useSaveStore((state) => state.isSaved);
+  const savedById = useSaveStore((state) => state.savedById);
   const toggleSaved = useSaveStore((state) => state.toggleSaved);
-  const listRef = useRef<FlashListRef<CalendarWeekGroupModel>>(null);
+  const isSaved = useCallback((id: string) => Boolean(savedById[id]), [savedById]);
+  const weekSpacing = tokens.spacing.lg;
+  const listRef = useRef<FlashListRef<CalendarListItem>>(null);
   const didInitialScrollRef = useRef(false);
   const lastBackwardLoadRef = useRef(0);
 
   const targetWeekIndex = useMemo(() => {
-    if (!weekGroups.length) {
+    if (!listItems.length) {
       return -1;
     }
 
-    const currentIndex = weekGroups.findIndex((group) => group.key === currentWeekKey);
+    const currentIndex = listItems.findIndex(
+      (item) => item.type === "week-header" && item.weekKey === currentWeekKey,
+    );
 
     if (currentIndex >= 0) {
       return currentIndex;
     }
 
-    const nextIndex = weekGroups.findIndex((group) => group.key > currentWeekKey);
+    const nextIndex = listItems.findIndex(
+      (item) => item.type === "week-header" && item.weekKey > currentWeekKey,
+    );
     return nextIndex >= 0 ? nextIndex : 0;
-  }, [currentWeekKey, weekGroups]);
+  }, [currentWeekKey, listItems]);
 
   useEffect(() => {
-    if (didInitialScrollRef.current || targetWeekIndex < 0 || !weekGroups.length) {
+    if (didInitialScrollRef.current || targetWeekIndex < 0 || !listItems.length) {
       return;
     }
 
@@ -79,13 +86,23 @@ export function CalendarScreen() {
     });
 
     return () => task.cancel();
-  }, [targetWeekIndex, weekGroups.length]);
+  }, [listItems.length, targetWeekIndex]);
 
   const selectedDetail = openDetailId ? detailById[openDetailId] ?? null : null;
 
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (event.nativeEvent.contentOffset.y > 120) {
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken<CalendarListItem>[] }) => {
+      let minWeekIndex = Number.POSITIVE_INFINITY;
+
+      for (const token of viewableItems) {
+        if (!token.isViewable || !token.item) {
+          continue;
+        }
+
+        minWeekIndex = Math.min(minWeekIndex, token.item.weekIndex);
+      }
+
+      if (!Number.isFinite(minWeekIndex) || minWeekIndex > 2) {
         return;
       }
 
@@ -100,38 +117,39 @@ export function CalendarScreen() {
     [loadBackward],
   );
 
-  const renderWeek = useCallback(
-    ({ item }: ListRenderItemInfo<CalendarWeekGroupModel>) => (
-      <WeekGroup title={item.label}>
-        {item.rows.map((row) => {
-          const rowProps = {
-            title: row.row.title,
-            releaseDateLabel: row.row.releaseDateLabel,
-            metadataFields: row.row.metadataFields,
-            platformLabel: row.row.platformLabel,
-            posterUrl: row.row.posterUrl,
-            posterBlurhash: row.row.posterBlurhash,
-            editorialTier: row.row.editorialTier,
-            isSaved: isSaved(row.id),
-            onPress: () => setOpenDetailId(row.id),
-            onToggleSave: () => toggleSaved(row.id),
-          } as const;
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<CalendarListItem>) => {
+      if (item.type === "week-header") {
+        return <WeekGroup title={item.label} style={styles.weekHeaderOnly} />;
+      }
 
-          if (row.row.temporalState === "dateChanged") {
-            return <DateChangeSignal key={row.id} {...rowProps} />;
-          }
+      const rowProps = {
+        title: item.row.row.title,
+        releaseDateLabel: item.row.row.releaseDateLabel,
+        metadataFields: item.row.row.metadataFields,
+        platformLabel: item.row.row.platformLabel,
+        posterUrl: item.row.row.posterUrl,
+        posterBlurhash: item.row.row.posterBlurhash,
+        editorialTier: item.row.row.editorialTier,
+        isSaved: isSaved(item.row.id),
+        onPress: () => setOpenDetailId(item.row.id),
+        onToggleSave: () => toggleSaved(item.row.id),
+      } as const;
 
-          return (
-            <CalendarRow
-              key={row.id}
-              {...rowProps}
-              temporalState={row.row.temporalState}
-            />
-          );
-        })}
-      </WeekGroup>
-    ),
-    [isSaved, toggleSaved],
+      const content =
+        item.row.row.temporalState === "dateChanged" ? (
+          <DateChangeSignal {...rowProps} />
+        ) : (
+          <CalendarRow {...rowProps} temporalState={item.row.row.temporalState} />
+        );
+
+      return (
+        <View style={item.isLastInWeek ? { marginBottom: weekSpacing } : undefined}>
+          {content}
+        </View>
+      );
+    },
+    [isSaved, toggleSaved, weekSpacing],
   );
 
   const listEmptyState = useMemo(() => {
@@ -171,14 +189,14 @@ export function CalendarScreen() {
     <ScreenContainer title="Calendar" scrollEnabled={false} contentContainerStyle={styles.content}>
       <FlashList
         ref={listRef}
-        data={weekGroups}
-        renderItem={renderWeek}
+        data={listItems}
+        renderItem={renderItem}
         keyExtractor={(item) => item.key}
-        getItemType={() => "week-group"}
+        getItemType={(item) => item.type}
+        overrideProps={{ estimatedItemSize: 76 }}
         onEndReachedThreshold={0.45}
         onEndReached={loadForward}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        onViewableItemsChanged={handleViewableItemsChanged}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
@@ -209,6 +227,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 24,
+  },
+  weekHeaderOnly: {
+    marginBottom: 0,
   },
   emptyContainer: {
     paddingTop: 24,

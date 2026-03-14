@@ -11,6 +11,8 @@ const WEEK_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
+// Keep separate formatters even while format options match today.
+// Week and row date display policy can diverge without coupling.
 const RELEASE_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -113,9 +115,27 @@ export interface CalendarWeekGroupModel {
   rows: CalendarMappedRow[];
 }
 
+export type CalendarListItem =
+  | {
+      type: "week-header";
+      key: string;
+      weekKey: string;
+      weekIndex: number;
+      label: string;
+    }
+  | {
+      type: "row";
+      key: string;
+      weekKey: string;
+      weekIndex: number;
+      row: CalendarMappedRow;
+      isLastInWeek: boolean;
+    };
+
 export interface CalendarMappedData {
   rowsById: Record<string, CalendarMappedRow>;
   weekGroups: CalendarWeekGroupModel[];
+  listItems: CalendarListItem[];
   currentWeekKey: string;
 }
 
@@ -181,10 +201,33 @@ export const mapCalendarReleases = (
     });
 
   const weekGroups = Object.values(grouped).sort((left, right) => left.key.localeCompare(right.key));
+  const listItems: CalendarListItem[] = [];
+
+  weekGroups.forEach((group, weekIndex) => {
+    listItems.push({
+      type: "week-header",
+      key: `week-${group.key}`,
+      weekKey: group.key,
+      weekIndex,
+      label: group.label,
+    });
+
+    group.rows.forEach((row, rowIndex) => {
+      listItems.push({
+        type: "row",
+        key: `row-${row.id}`,
+        weekKey: group.key,
+        weekIndex,
+        row,
+        isLastInWeek: rowIndex === group.rows.length - 1,
+      });
+    });
+  });
 
   return {
     rowsById,
     weekGroups,
+    listItems,
     currentWeekKey,
   };
 };

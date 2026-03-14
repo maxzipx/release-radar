@@ -19,6 +19,7 @@ interface ReleaseRow {
   cast_json: unknown;
   synopsis: string | null;
   poster_url: string | null;
+  poster_blurhash: string | null;
   trailer_url: string | null;
   release_date: string | null;
   platform_label: string | null;
@@ -87,6 +88,7 @@ releasesRoutes.get("/", async (c) => {
         "cast_json",
         "synopsis",
         "poster_url",
+        "poster_blurhash",
         "trailer_url",
         "release_date",
         "platform_label",
@@ -127,7 +129,7 @@ releasesRoutes.get("/", async (c) => {
       content_type: contentType,
       director: row.director,
       poster_url: row.poster_url,
-      poster_blurhash: null,
+      poster_blurhash: row.poster_blurhash,
       trailer_url: row.trailer_url,
       release_date: row.release_date,
       platform_label: row.platform_label ?? "",

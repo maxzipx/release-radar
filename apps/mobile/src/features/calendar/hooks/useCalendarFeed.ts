@@ -39,7 +39,7 @@ const mergeById = (
 
 export const useCalendarFeed = () => {
   const initialWindow = useMemo(() => getInitialCalendarWindow(), []);
-  const [windowRange, setWindowRange] = useState<WindowRange>({
+  const [, setWindowRange] = useState<WindowRange>({
     from: initialWindow.from,
     to: initialWindow.to,
   });
@@ -50,23 +50,30 @@ export const useCalendarFeed = () => {
 
   const loadedRangesRef = useRef(new Set<string>());
   const inFlightRangesRef = useRef(new Set<string>());
+  const requestGenerationRef = useRef(0);
   const sourceModeRef = useRef<"api" | "mock" | null>(null);
   const mockReleasesRef = useRef(buildMockCalendarReleases());
 
   const fetchRange = useCallback(
-    async (range: WindowRange, options?: { force?: boolean }) => {
+    async (range: WindowRange, options?: { force?: boolean; generation?: number }) => {
       const key = rangeKey(range);
       const force = options?.force ?? false;
+      const generation = options?.generation ?? requestGenerationRef.current;
+      const inFlightKey = `${generation}:${key}`;
+
+      if (generation !== requestGenerationRef.current) {
+        return;
+      }
 
       if (!force && loadedRangesRef.current.has(key)) {
         return;
       }
 
-      if (inFlightRangesRef.current.has(key)) {
+      if (inFlightRangesRef.current.has(inFlightKey)) {
         return;
       }
 
-      inFlightRangesRef.current.add(key);
+      inFlightRangesRef.current.add(inFlightKey);
 
       try {
         let releases: CalendarReleaseItem[] = [];
@@ -89,18 +96,26 @@ export const useCalendarFeed = () => {
           }
         }
 
+        if (generation !== requestGenerationRef.current) {
+          return;
+        }
+
         sourceModeRef.current = source;
         loadedRangesRef.current.add(key);
         setReleaseMap((previous) => mergeById(previous, releases));
         setStatus("ready");
         setErrorMessage(null);
       } catch (error) {
+        if (generation !== requestGenerationRef.current) {
+          return;
+        }
+
         setStatus("error");
         setErrorMessage(
           error instanceof Error ? error.message : "Failed to load releases.",
         );
       } finally {
-        inFlightRangesRef.current.delete(key);
+        inFlightRangesRef.current.delete(inFlightKey);
       }
     },
     [],
@@ -139,17 +154,25 @@ export const useCalendarFeed = () => {
   }, [fetchRange]);
 
   const refresh = useCallback(async () => {
+    requestGenerationRef.current += 1;
+    const generation = requestGenerationRef.current;
+    const nextWindow = {
+      from: initialWindow.from,
+      to: initialWindow.to,
+    };
+
     setIsRefreshing(true);
     setStatus("loading");
     setErrorMessage(null);
+    setWindowRange(nextWindow);
     sourceModeRef.current = null;
     loadedRangesRef.current.clear();
     inFlightRangesRef.current.clear();
     setReleaseMap({});
 
-    await fetchRange(windowRange, { force: true });
+    await fetchRange(nextWindow, { force: true, generation });
     setIsRefreshing(false);
-  }, [fetchRange, windowRange]);
+  }, [fetchRange, initialWindow.from, initialWindow.to]);
 
   const mappedData = useMemo(
     () => mapCalendarReleases(Object.values(releaseMap)),
@@ -157,7 +180,7 @@ export const useCalendarFeed = () => {
   );
 
   return {
-    currentWeekKey: mappedData.currentWeekKey || initialWindow.currentWeekKey,
+    currentWeekKey: mappedData.currentWeekKey,
     detailById: Object.fromEntries(
       Object.values(mappedData.rowsById).map((value) => [value.id, value.detail]),
     ),
@@ -165,6 +188,7 @@ export const useCalendarFeed = () => {
     status,
     errorMessage,
     isRefreshing,
+    listItems: mappedData.listItems,
     weekGroups: mappedData.weekGroups,
     loadForward,
     loadBackward,

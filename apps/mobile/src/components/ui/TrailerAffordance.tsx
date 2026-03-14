@@ -52,11 +52,6 @@ export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
           Watch trailer
         </Text>
       </Pressable>
-      {disabled ? (
-        <Text style={[tokens.typography.microLabel, { color: colors.textTertiary }]}>
-          expo-web-browser not installed
-        </Text>
-      ) : null}
     </View>
   );
 }
