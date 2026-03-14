@@ -35,7 +35,7 @@ export interface DetailSheetData {
   platformLabel: string;
   posterUrl?: string | null;
   posterBlurhash?: string | null;
-  synopsis: string;
-  cast: string[];
+  synopsis?: string;
+  cast?: string[];
   trailerUrl?: string | null;
 }

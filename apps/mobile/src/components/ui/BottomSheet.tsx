@@ -37,6 +37,7 @@ export function BottomSheet({
   const topPosition = useRef(new Animated.Value(windowHeight)).current;
   const currentTop = useRef(windowHeight);
   const panStartTop = useRef(windowHeight);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initialTop = useMemo(
     () => Math.max(windowHeight * (1 - initialSnapPercent), 0),
@@ -96,6 +97,15 @@ export function BottomSheet({
     [backdropOpacity, reduceMotion, tokens.motion.fast],
   );
 
+  const clearDismissTimer = useCallback(() => {
+    if (dismissTimerRef.current) {
+      clearTimeout(dismissTimerRef.current);
+      dismissTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearDismissTimer, [clearDismissTimer]);
+
   useEffect(() => {
     if (visible) {
       setIsMounted(true);
@@ -133,9 +143,10 @@ export function BottomSheet({
   const dismissSheet = useCallback(() => {
     animateBackdrop(0, true);
     animateTo(windowHeight, true);
-
-    setTimeout(
+    clearDismissTimer();
+    dismissTimerRef.current = setTimeout(
       () => {
+        dismissTimerRef.current = null;
         setIsMounted(false);
         onDismiss();
       },
@@ -144,6 +155,7 @@ export function BottomSheet({
   }, [
     animateBackdrop,
     animateTo,
+    clearDismissTimer,
     onDismiss,
     reduceMotion,
     tokens.motion.fast,

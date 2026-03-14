@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { useThemeTokens } from "@/hooks";
 
 interface ExpoWebBrowserModule {
@@ -33,34 +33,29 @@ export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
   const disabled = !isExpoWebBrowserAvailable;
 
   return (
-    <View style={styles.container}>
-      <Pressable
-        disabled={disabled}
-        onPress={() => {
-          if (!webBrowser) {
-            return;
-          }
+    <Pressable
+      disabled={disabled}
+      onPress={() => {
+        if (!webBrowser) {
+          return;
+        }
 
-          void webBrowser.openBrowserAsync(normalizedTrailerUrl);
-        }}
-        style={styles.button}
-        accessibilityRole="button"
-        accessibilityState={{ disabled }}
-        accessibilityLabel="Watch trailer"
-      >
-        <MaterialIcons name="play-arrow" size={14} color={colors.textSecondary} />
-        <Text style={[tokens.typography.supporting, { color: colors.textSecondary }]}>
-          Watch trailer
-        </Text>
-      </Pressable>
-    </View>
+        void webBrowser.openBrowserAsync(normalizedTrailerUrl);
+      }}
+      style={styles.button}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      accessibilityLabel="Watch trailer"
+    >
+      <MaterialIcons name="play-arrow" size={14} color={colors.textSecondary} />
+      <Text style={[tokens.typography.supporting, { color: colors.textSecondary }]}>
+        Watch trailer
+      </Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 6,
-  },
   button: {
     flexDirection: "row",
     alignItems: "center",

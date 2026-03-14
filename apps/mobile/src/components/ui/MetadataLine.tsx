@@ -27,12 +27,23 @@ export function MetadataLine({
     <Text
       numberOfLines={numberOfLines}
       ellipsizeMode="tail"
-      style={[tokens.typography.metadata, styles.line, { color: colors.textSecondary }, style]}
+      style={[tokens.typography.metadata, styles.line, { color: colors.textSecondary }]}
     >
-      <Text style={[styles.tabular, tokens.typography.tabular, leadingColor ? { color: leadingColor } : null]}>
+      <Text
+        style={[
+          styles.tabular,
+          tokens.typography.metadata,
+          tokens.typography.tabular,
+          leadingColor ? { color: leadingColor } : null,
+        ]}
+      >
         {first}
       </Text>
-      {rest.length ? ` · ${rest.join(" · ")}` : ""}
+      {rest.length ? (
+        <Text style={[styles.supplemental, tokens.typography.supporting, style]}>
+          {` · ${rest.join(" · ")}`}
+        </Text>
+      ) : null}
     </Text>
   );
 }
@@ -42,6 +53,9 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   tabular: {
+    includeFontPadding: false,
+  },
+  supplemental: {
     includeFontPadding: false,
   },
 });
