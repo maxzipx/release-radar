@@ -24,8 +24,9 @@ interface TrailerAffordanceProps {
 
 export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
   const { colors, tokens } = useThemeTokens();
+  const normalizedTrailerUrl = trailerUrl?.trim();
 
-  if (!trailerUrl) {
+  if (!normalizedTrailerUrl) {
     return null;
   }
 
@@ -40,7 +41,7 @@ export function TrailerAffordance({ trailerUrl }: TrailerAffordanceProps) {
             return;
           }
 
-          void webBrowser.openBrowserAsync(trailerUrl);
+          void webBrowser.openBrowserAsync(normalizedTrailerUrl);
         }}
         style={styles.button}
         accessibilityRole="button"

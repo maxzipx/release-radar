@@ -29,6 +29,12 @@ export function DetailSheet({
     return null;
   }
 
+  const platformLabel = (item.platformLabel ?? "").trim();
+  const synopsis = (item.synopsis ?? "").trim();
+  const castNames = (item.cast ?? [])
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+
   return (
     <BottomSheet visible={visible} onDismiss={onDismiss} expandable>
       <ScrollView
@@ -36,7 +42,7 @@ export function DetailSheet({
           styles.content,
           {
             paddingHorizontal: tokens.layout.screenMargin,
-            paddingBottom: 32,
+            paddingBottom: tokens.spacing.xl,
           },
         ]}
       >
@@ -55,21 +61,26 @@ export function DetailSheet({
           <SaveToggle isSaved={isSaved} onToggle={onToggleSave} />
         </View>
 
-        <PlatformBadge label={item.platformLabel} />
+        {platformLabel ? <PlatformBadge label={platformLabel} /> : null}
         <MetadataLine
           fields={[item.releaseDateLabel, ...item.metadataFields]}
-          style={tokens.typography.tabular}
+          numberOfLines={2}
+          style={tokens.typography.supporting}
         />
 
-        <Text style={[tokens.typography.supporting, { color: colors.textSecondary }]}>
-          {item.synopsis}
-        </Text>
+        {synopsis ? (
+          <Text style={[tokens.typography.supporting, { color: colors.textSecondary }]}>
+            {synopsis}
+          </Text>
+        ) : null}
 
         <TrailerAffordance trailerUrl={item.trailerUrl} />
 
-        <Text style={[tokens.typography.supporting, { color: colors.textPrimary }]}>
-          Cast: {item.cast.join(", ")}
-        </Text>
+        {castNames.length ? (
+          <Text style={[tokens.typography.supporting, { color: colors.textSecondary }]}>
+            Cast: {castNames.join(", ")}
+          </Text>
+        ) : null}
       </ScrollView>
     </BottomSheet>
   );

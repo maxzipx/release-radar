@@ -6,9 +6,15 @@ interface MetadataLineProps {
   fields: string[];
   leadingColor?: string;
   style?: StyleProp<TextStyle>;
+  numberOfLines?: number;
 }
 
-export function MetadataLine({ fields, leadingColor, style }: MetadataLineProps) {
+export function MetadataLine({
+  fields,
+  leadingColor,
+  style,
+  numberOfLines = 1,
+}: MetadataLineProps) {
   const { colors, tokens } = useThemeTokens();
 
   if (!fields.length) {
@@ -19,7 +25,7 @@ export function MetadataLine({ fields, leadingColor, style }: MetadataLineProps)
 
   return (
     <Text
-      numberOfLines={1}
+      numberOfLines={numberOfLines}
       ellipsizeMode="tail"
       style={[tokens.typography.metadata, styles.line, { color: colors.textSecondary }, style]}
     >

@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   handleContainer: {
     alignItems: "center",
     paddingTop: 8,
-    paddingBottom: 8,
+    paddingBottom: 0,
   },
   handle: {
     height: 4,
