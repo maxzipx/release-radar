@@ -189,7 +189,6 @@ export const useCalendarFeed = () => {
     errorMessage,
     isRefreshing,
     listItems: mappedData.listItems,
-    weekGroups: mappedData.weekGroups,
     loadForward,
     loadBackward,
     refresh,

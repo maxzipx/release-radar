@@ -193,7 +193,7 @@ export function CalendarScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.key}
         getItemType={(item) => item.type}
-        overrideProps={{ estimatedItemSize: 76 }}
+        estimatedItemSize={76}
         onEndReachedThreshold={0.45}
         onEndReached={loadForward}
         onViewableItemsChanged={handleViewableItemsChanged}
